@@ -1,0 +1,6 @@
+{
+  "Token": "sometoken",
+  "Path": "/home/user/PutIo/", // destination path
+  "FromTimeInHours":24, //  time in hours to filter new files
+  "FilesTTLInDays": 60 // time in days to filter older files to be removed
+}
