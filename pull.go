@@ -21,14 +21,14 @@ func getLatestFiles(client *putio.Client, ctx context.Context, findFrom time.Dur
 	return latest
 }
 
-func DownloadNode(client *putio.Client, ctx context.Context, e putio.File, rootPath string) {
+func downloadNode(client *putio.Client, ctx context.Context, e putio.File, rootPath string) {
 	ios, _ := client.Files.Download(ctx, e.ID, false, nil)
 	path := fmt.Sprintf("%s%s", rootPath, e.Name)
 	if e.IsDir() {
 		CreateDirIfNotExist(path)
 		children, _, _ := client.Files.List(ctx, e.ID)
 		for _, ch := range children {
-			DownloadNode(client, ctx, ch, filepath.Clean(path)+"/"+e.Name)
+			downloadNode(client, ctx, ch, filepath.Clean(path)+"/"+e.Name)
 		}
 		return
 	}

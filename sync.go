@@ -1,3 +1,16 @@
+//A Go library to sync files from a remote Put.io account to a local directory
+//It allows you to set a  ttl for local files and the age of the files you want to import
+//
+// Usage:
+//	import "github.com/jhony/putioSync"
+//
+//	func main() {
+//		config,err := putioSync.LoadConfig("user_home/dir/.config/putioSync.json")
+//		if err != nil {
+//			log.Fatal("There was an issue loading the config", err)
+//		}
+//		putioSync.Sync(config)
+//	}
 package putioSync
 
 import (
@@ -14,6 +27,8 @@ import (
 )
 import "github.com/igungor/go-putio/putio"
 
+//Given a Configuration creates a downstream sync, that pulls newely added files
+//and removes older files based on the config
 func Sync(config Configuration) {
 	ctx, client := buildClient(config)
 	cutOutTime := time.Now().AddDate(0, 0, -config.FilesTTLInDays)
@@ -45,12 +60,13 @@ func deleteOlderFiles(path string, config Configuration, cutOutTime time.Time) {
 	}
 }
 
+// given a directory address checks if the directory is empty
 func IsEmpty(name string) (bool, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return false, err
 	}
-	defer Close(f)
+	defer close(f)
 
 	_, err = f.Readdirnames(1) // Or f.Readdir(1)
 	if err == io.EOF {
@@ -63,11 +79,11 @@ func syncLatest(config Configuration, client *putio.Client, ctx context.Context)
 	findFrom, _ := time.ParseDuration(fmt.Sprintf("%dh", config.FromTimeInHours))
 	latest := getLatestFiles(client, ctx, findFrom)
 	for _, e := range latest {
-		DownloadNode(client, ctx, e, config.Path)
+		downloadNode(client, ctx, e, config.Path)
 	}
 }
 
-func Close(c io.Closer) {
+func close(c io.Closer) {
 	err := c.Close()
 	if err != nil {
 		log.Fatal(err)
